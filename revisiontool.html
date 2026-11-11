@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Revision Tool">
+<meta name="theme-color" content="#FFF8F1">
+<title>Revision Tool</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%AE%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<style>
+:root{
+  --ink:#4A4458; --soft:#8B8498; --line:#EDE4DC; --paper:#FFF8F1; --card:#FFFFFF;
+  --bg:#FFD6E0; --mid:#F59DB4; --deep:#8E2F4D; --onmid:#8E2F4D; --glass:#ffffffcc;
+  --ok-bg:#D6F5E3; --ok:#1F6B4A; --no-bg:#FFD9DF; --no:#A33A55;
+  --head:"Baloo 2",ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",system-ui,sans-serif;
+  --body:"Nunito",ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  --r:22px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--body);font-weight:500;color:var(--ink);background:var(--paper);min-height:100vh;
+  background-image:radial-gradient(circle at 8% 4%,#FFE3EC 0,transparent 26%),radial-gradient(circle at 96% 12%,#E7D6FF 0,transparent 24%),radial-gradient(circle at 80% 96%,#CDF5E1 0,transparent 28%),radial-gradient(circle at 4% 88%,#FFF3B8 0,transparent 24%);
+  background-attachment:fixed}
+body.math{background-image:linear-gradient(#E3E8FF88 1px,transparent 1px),linear-gradient(90deg,#E3E8FF88 1px,transparent 1px);background-size:26px 26px;background-attachment:fixed}
+h1,h2,h3{font-family:var(--head);margin:0;line-height:1.15}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+.wrap{max-width:920px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
+
+/* top */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .logo{font-size:34px;background:var(--card);border-radius:18px;width:54px;height:54px;display:grid;place-items:center;box-shadow:0 4px 0 var(--line)}
+.brand h1{font-size:28px}
+.brand p{margin:0;color:var(--soft);font-size:13px;font-weight:700}
+.ws{display:flex;background:var(--card);border-radius:999px;padding:4px;box-shadow:0 3px 0 var(--line)}
+.ws button{padding:8px 14px;border-radius:999px;font-weight:800;font-size:14px;color:var(--soft)}
+.ws button.on{background:var(--bg);color:var(--deep)}
+
+.bar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.back{width:44px;height:44px;border-radius:16px;background:var(--card);box-shadow:0 3px 0 var(--line);font-size:20px;flex:none}
+.bar h2{font-size:24px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .sub{color:var(--soft);font-size:13px;font-weight:700}
+.icon{width:40px;height:40px;border-radius:14px;background:var(--card);box-shadow:0 3px 0 var(--line);font-size:17px;flex:none}
+
+.sec{margin:22px 0 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.sec h2{font-size:20px}
+.hint{color:var(--soft);font-size:13.5px;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 18px;border-radius:999px;background:var(--card);font-weight:800;box-shadow:0 3px 0 var(--line);font-size:15px;min-height:44px}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.btn.pri{background:var(--mid);color:var(--onmid);box-shadow:0 3px 0 color-mix(in srgb,var(--mid) 70%,#000 12%)}
+.btn.soft{background:var(--bg);color:var(--deep);box-shadow:none}
+.btn.small{padding:7px 13px;font-size:13.5px;min-height:36px}
+.btn.big{padding:15px 26px;font-size:17px}
+.btn.danger{color:var(--no)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* folders */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 14px}
+.folder{position:relative;background:var(--bg);border:2.5px solid var(--mid);border-radius:6px 22px 22px 22px;padding:16px 14px 12px;margin-top:14px;min-height:112px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;color:var(--deep);transition:transform .15s}
+.folder::before{content:"";position:absolute;top:-16px;left:-2.5px;width:48%;height:16px;background:var(--mid);border-radius:12px 16px 0 0}
+.folder:active{transform:scale(.97)}
+.folder b{font-family:var(--head);font-size:19px;line-height:1.15;word-break:break-word}
+.folder span{font-size:12.5px;font-weight:800;opacity:.8}
+.folder.new{background:var(--card);border-style:dashed;border-color:var(--line);color:var(--soft);align-items:center;justify-content:center;font-weight:800}
+.folder.new::before{background:var(--line)}
+
+/* topic + decks */
+.topic{background:var(--glass);border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:0 3px 0 var(--line)}
+.topic-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.topic-h h3{font-size:18px;flex:1;min-width:0;word-break:break-word}
+.decks{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.deck{border-radius:18px;padding:12px;min-height:96px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:8px;color:var(--deep);position:relative}
+.deck b{font-size:15px;font-weight:800;line-height:1.2;word-break:break-word}
+.deck small{font-size:11.5px;font-weight:800;letter-spacing:.02em;display:flex;align-items:center;gap:5px}
+.deck.flash{background:var(--card);border:2.5px dashed var(--mid);outline:2.5px solid var(--bg);outline-offset:2px}
+.deck.quiz{background-color:var(--bg);border:2.5px solid var(--bg);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70'%3E%3Cg font-family='Arial' font-weight='700' fill='white' fill-opacity='.7'%3E%3Ctext x='8' y='30' font-size='28' transform='rotate(-14 16 22)'%3E?%3C/text%3E%3Ctext x='42' y='62' font-size='20' transform='rotate(14 48 54)'%3E?%3C/text%3E%3C/g%3E%3C/svg%3E")}
+.deck .dot{position:absolute;top:8px;right:8px;background:var(--card);border-radius:999px;font-size:10.5px;font-weight:800;padding:2px 7px}
+.deck.add{background:transparent;border:2.5px dashed var(--line);color:var(--soft);align-items:center;justify-content:center;font-weight:800;font-size:13.5px;text-align:center;outline:0}
+.empty{text-align:center;color:var(--soft);font-weight:700;padding:26px 10px}
+
+/* panels */
+.panel{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:0 3px 0 var(--line);margin-bottom:14px}
+.panel h3{font-size:18px;margin-bottom:8px}
+details.panel summary{cursor:pointer;font-family:var(--head);font-size:18px;font-weight:700;list-style:none;display:flex;align-items:center;justify-content:space-between}
+details.panel summary::-webkit-details-marker{display:none}
+details.panel summary::after{content:"＋";color:var(--soft)}
+details.panel[open] summary::after{content:"－"}
+pre.code{background:var(--paper);border:1.5px solid var(--line);border-radius:14px;padding:12px;font-size:12.5px;white-space:pre-wrap;word-break:break-word;max-height:210px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;margin:8px 0}
+.cont{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;padding:10px 12px 10px 14px;margin-bottom:8px;border-left:8px solid var(--mid)}
+.cont div{flex:1;min-width:0}
+.cont b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cont span{font-size:12.5px;color:var(--soft);font-weight:700}
+.nudge{background:#FFF3B8;color:#7A5C00;border-radius:14px;padding:10px 14px;font-weight:700;font-size:14px;margin-top:10px}
+
+/* forms */
+label.f{display:block;font-weight:800;font-size:13.5px;margin:12px 0 5px;color:var(--soft)}
+.in,textarea.in{width:100%;border:2px solid var(--line);border-radius:14px;padding:11px 13px;background:var(--card);outline:0;font-size:16px}
+.in:focus{border-color:var(--mid)}
+textarea.in{min-height:190px;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.45}
+.sw{display:flex;gap:9px;flex-wrap:wrap}
+.sw button{width:38px;height:38px;border-radius:50%;background:var(--bg);border:3px solid var(--mid)}
+.sw button.on{box-shadow:0 0 0 3px var(--paper),0 0 0 6px var(--ink)}
+.seg{display:inline-flex;background:var(--paper);border-radius:999px;padding:4px;flex-wrap:wrap}
+.seg button{padding:8px 15px;border-radius:999px;font-weight:800;font-size:14px;color:var(--soft)}
+.seg button.on{background:var(--mid);color:var(--onmid)}
+.opt-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1.5px dashed var(--line);flex-wrap:wrap}
+.opt-row:first-of-type{border-top:0}
+.opt-row b{font-weight:800}
+.opt-row small{display:block;color:var(--soft);font-weight:700;font-size:12.5px}
+.tog{width:52px;height:30px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s}
+.tog.on{background:var(--mid)}
+.tog.on::after{left:25px}
+.check{font-size:13.5px;font-weight:700;margin-top:8px;min-height:20px}
+.check .bad{color:var(--no)} .check .good{color:var(--ok)}
+
+/* modal + toast */
+#modal{position:fixed;inset:0;background:#4A445855;display:none;align-items:flex-end;justify-content:center;z-index:50;padding:0}
+#modal.on{display:flex}
+.sheet{background:var(--paper);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:28px 28px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));animation:up .22s ease-out}
+@media(min-width:680px){#modal{align-items:center;padding:20px}.sheet{border-radius:28px}}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.sheet h3{font-size:21px;margin-bottom:6px}
+.sheet .row.end{justify-content:flex-end;margin-top:16px}
+#toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:60;max-width:90vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+
+/* progress */
+.prog{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.track{flex:1;height:14px;background:var(--card);border-radius:999px;overflow:hidden;box-shadow:inset 0 0 0 2px var(--line)}
+.fill{height:100%;background:var(--mid);border-radius:999px;transition:width .3s}
+.prog span{font-weight:800;font-size:13.5px;color:var(--deep);white-space:nowrap}
+
+/* flashcard */
+.fc-stage{perspective:1400px;height:min(58vh,460px);min-height:300px;position:relative;margin:6px auto 16px;max-width:560px}
+.fc{position:absolute;inset:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab}
+.fc-inner{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.3,1.3,.5,1)}
+.fc-inner.flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:30px;padding:22px 20px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 0 color-mix(in srgb,var(--mid) 55%,var(--card)),0 18px 30px #4A445818}
+.face.f-front{background:var(--bg);border:3px solid var(--mid);color:var(--deep)}
+.face.f-back{background:var(--card);border:3px dashed var(--mid);transform:rotateY(180deg)}
+.face .tag{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.7;flex:none}
+.face .txt{flex:1;overflow:auto;display:flex;flex-direction:column;justify-content:center;font-size:23px;font-weight:700;line-height:1.35;text-align:center;padding:8px 2px;word-break:break-word}
+.face .txt>div{margin:auto 0}
+.face .txt.long{font-size:18px}.face .txt.xlong{font-size:15.5px;text-align:left}
+.face.f-back .txt{font-weight:600}
+.face .txt ul{text-align:left;margin:8px 0 0;padding-left:22px;font-size:.86em;font-weight:600}
+.face .txt li{margin:4px 0}
+.face .tap{font-size:12px;font-weight:800;opacity:.55;text-align:center;flex:none}
+.stamp{position:absolute;top:22px;padding:6px 14px;border-radius:12px;font-family:var(--head);font-size:20px;opacity:0;z-index:3;pointer-events:none}
+.stamp.l{right:18px;background:var(--no-bg);color:var(--no);transform:rotate(10deg)}
+.stamp.r{left:18px;background:var(--ok-bg);color:var(--ok);transform:rotate(-10deg)}
+.fc.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-10px)}50%{transform:translateX(10px)}75%{transform:translateX(-6px)}}
+.fc-btns{display:flex;justify-content:center;align-items:center;gap:14px}
+.round{width:66px;height:66px;border-radius:50%;font-size:26px;font-weight:800;display:grid;place-items:center;box-shadow:0 4px 0 #0001}
+.round.no{background:var(--no-bg);color:var(--no)} .round.ok{background:var(--ok-bg);color:var(--ok)}
+.round.mid{width:52px;height:52px;background:var(--card);font-size:20px}
+.round:active{transform:translateY(3px);box-shadow:none}
+.round[disabled]{opacity:.35}
+.keys{text-align:center;color:var(--soft);font-size:12.5px;font-weight:700;margin-top:14px}
+@media(hover:none){.keys{display:none}}
+
+/* quiz */
+.q-card{background:var(--card);border-radius:28px;padding:20px;box-shadow:0 6px 0 color-mix(in srgb,var(--mid) 55%,var(--card));border:3px solid var(--bg);margin-bottom:14px}
+.q-kind{display:inline-block;background:var(--bg);color:var(--deep);font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:10px}
+.q-text{font-size:20px;font-weight:700;line-height:1.4;word-break:break-word}
+.blank{display:inline-block;min-width:70px;border-bottom:3px solid var(--mid);margin:0 3px;height:1em;vertical-align:baseline}
+.opts{display:grid;gap:10px;margin-top:16px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;background:var(--paper);border:2.5px solid var(--line);border-radius:18px;padding:12px 14px;font-weight:700;font-size:16.5px;min-height:54px;width:100%}
+.opt i{font-style:normal;flex:none;width:30px;height:30px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-weight:800;font-size:14px;color:var(--soft)}
+.opt.sel{border-color:var(--mid);background:var(--bg);color:var(--deep)}
+.opt.right{border-color:#8FDDB8;background:var(--ok-bg);color:var(--ok)}
+.opt.wrong{border-color:#F59DB4;background:var(--no-bg);color:var(--no)}
+.opt[disabled]{cursor:default}
+.tf{grid-template-columns:1fr 1fr}
+.tf .opt{justify-content:center;font-size:18px}
+.ans-in{margin-top:16px;display:flex;gap:10px}
+.ans-in .in{flex:1}
+.fb{border-radius:20px;padding:14px 16px;margin-top:14px;font-weight:700}
+.fb.ok{background:var(--ok-bg);color:var(--ok)} .fb.no{background:var(--no-bg);color:var(--no)}
+.fb h4{margin:0 0 4px;font-family:var(--head);font-size:19px}
+.fb p{margin:4px 0;font-size:15px}
+.fb .why{background:var(--glass);border-radius:12px;padding:8px 11px;margin-top:8px;color:var(--ink);font-weight:600;font-size:14.5px}
+.fb .lnk{text-decoration:underline;font-weight:800;font-size:14px;margin-top:8px;color:inherit}
+.q-nav{display:flex;gap:7px;overflow-x:auto;padding:4px 2px 10px;margin-bottom:6px;-webkit-overflow-scrolling:touch}
+.q-nav button{flex:none;width:36px;height:36px;border-radius:12px;background:var(--card);font-weight:800;font-size:13.5px;color:var(--soft);border:2.5px solid var(--line)}
+.q-nav button.done{background:var(--bg);border-color:var(--bg);color:var(--deep)}
+.q-nav button.cur{border-color:var(--deep)}
+.q-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+/* results */
+.score{text-align:center;padding:20px 10px}
+.ring{width:150px;height:150px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;background:conic-gradient(var(--mid) calc(var(--p)*1%),var(--card) 0);box-shadow:0 5px 0 var(--line)}
+.ring div{width:118px;height:118px;border-radius:50%;background:var(--paper);display:grid;place-items:center;font-family:var(--head);font-size:30px;color:var(--deep);line-height:1}
+.ring small{display:block;font-size:13px;color:var(--soft);font-family:var(--body);font-weight:800}
+.score h2{font-size:24px}
+.rev{background:var(--card);border-radius:20px;padding:14px 16px;margin-bottom:10px;border-left:8px solid #F59DB4}
+.rev.ok{border-left-color:#8FDDB8}
+.rev .rq{font-weight:800;margin-bottom:6px;word-break:break-word}
+.rev p{margin:3px 0;font-size:14.5px;font-weight:600;word-break:break-word}
+.rev .you{color:var(--no)} .rev.ok .you{color:var(--ok)} .rev .cor{color:var(--ok)}
+.rev .why{color:var(--soft)}
+.rev .lnk{text-decoration:underline;font-weight:800;font-size:13.5px;color:var(--soft);margin-top:6px}
+.miss{display:flex;gap:10px;align-items:flex-start;background:var(--card);border-radius:16px;padding:10px 14px;margin-bottom:8px}
+.miss i{font-style:normal;background:var(--no-bg);color:var(--no);font-weight:800;border-radius:999px;padding:2px 9px;font-size:13px;flex:none}
+.rawtex{font-family:ui-monospace,Menlo,monospace;font-size:.85em;background:var(--paper);padding:1px 5px;border-radius:6px}
+.katex-display{margin:.5em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+sub,sup{font-size:.72em;line-height:0}
+.steps{margin:6px 0 0;padding-left:20px;font-size:14.5px;font-weight:600}
+.steps li{margin:5px 0}
+
+/* dark mode */
+body.dark{--ink:#EDE7F3;--soft:#A9A1B8;--line:#3D3649;--paper:#1E1A25;--card:#2B2634;--glass:#2B2634cc;--ok-bg:#1F3D30;--ok:#A6E6C6;--no-bg:#4A2531;--no:#FFB6C6;color-scheme:dark;
+  background-image:radial-gradient(circle at 8% 4%,#4A253166 0,transparent 26%),radial-gradient(circle at 96% 12%,#3A2D5C66 0,transparent 24%),radial-gradient(circle at 80% 96%,#1F3D3066 0,transparent 28%),radial-gradient(circle at 4% 88%,#4A401A55 0,transparent 24%)}
+body.dark.math{background-image:linear-gradient(#ffffff0a 1px,transparent 1px),linear-gradient(90deg,#ffffff0a 1px,transparent 1px)}
+body.dark .deck.quiz{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70'%3E%3Cg font-family='Arial' font-weight='700' fill='white' fill-opacity='.13'%3E%3Ctext x='8' y='30' font-size='28' transform='rotate(-14 16 22)'%3E?%3C/text%3E%3Ctext x='42' y='62' font-size='20' transform='rotate(14 48 54)'%3E?%3C/text%3E%3C/g%3E%3C/svg%3E")}
+body.dark .nudge{background:#4A401A;color:#FFE9A6}
+body.dark .btn,body.dark .back,body.dark .icon,body.dark .ws,body.dark .panel,body.dark .topic,body.dark .brand .logo{box-shadow:0 3px 0 #00000040}
+body.dark .btn.pri{box-shadow:0 3px 0 #00000055}
+body.dark .face{box-shadow:0 8px 0 color-mix(in srgb,var(--mid) 35%,var(--card)),0 18px 30px #0006}
+body.dark .rev .lnk{color:var(--soft)}
+.top-r{display:flex;align-items:center;gap:10px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="modal"></div>
+<div id="toast"></div>
+
+<script>
+/*CORE-START*/
+const Core = (() => {
+  const KEY_RE = /^\s*(\*\*)?\s*(Q(?:UESTION)?|A(?:NSWER)?|X|WHY)\s*\d*\s*\**\s*[:：]\s*\**\s?(.*)$/i;
+  const STOP = new Set(['a','an','the','of','is','are','to','in','and','it']);
+
+  function trimBlank(s){ return String(s).replace(/[ \t]+$/gm,'').replace(/\n{3,}/g,'\n\n').trim(); }
+
+  function parseBlocks(text){
+    const lines = String(text||'').replace(/\r\n?/g,'\n').split('\n');
+    const blocks = []; let cur = null, field = null;
+    lines.forEach((raw, i) => {
+      const line = raw.replace(/ /g,' ');
+      if (/^\s*(```|={3,})/.test(line)) return;
+      const m = line.match(KEY_RE);
+      if (m) {
+        let val = m[3].trim();
+        if (m[1] && /\*\*$/.test(val)) val = val.slice(0,-2).trim();
+        const k = m[2][0].toUpperCase();
+        if (k === 'Q') { cur = {q:val, a:null, x:[], why:'', line:i+1}; blocks.push(cur); field='q'; return; }
+        if (!cur) return;
+        if (k === 'A') { if (cur.a === null) { cur.a = val; field='a'; } else { cur.a += '\n' + line.trim(); } return; }
+        if (k === 'X') { if (val) cur.x.push(val); field='x'; return; }
+        cur.why = val; field='why'; return;
+      }
+      if (!cur) return;
+      const t = line.replace(/\s+$/,'');
+      if (field==='q') cur.q += '\n'+t;
+      else if (field==='a') cur.a += '\n'+t;
+      else if (field==='x' && t.trim() && cur.x.length) cur.x[cur.x.length-1] += ' '+t.trim();
+      else if (field==='why' && t.trim()) cur.why += ' '+t.trim();
+    });
+    blocks.forEach(b => { b.q = trimBlank(b.q); b.a = b.a===null ? null : trimBlank(b.a); });
+    return blocks;
+  }
+
+  function wordCount(s){ return (String(s).trim().match(/\S+/g)||[]).length; }
+
+  function detectKind(b){
+    if (b.x && b.x.length) return 'mcq';
+    if (/^(true|false)$/i.test(String(b.a).trim())) return 'tf';
+    if (/_{3,}/.test(b.q)) return 'blank';
+    return 'short';
+  }
+
+  function toFlash(blocks){
+    const items = [], problems = [];
+    blocks.forEach(b => {
+      if (!b.q) return problems.push('Line '+b.line+': the question is empty');
+      if (!b.a) return problems.push('Line '+b.line+': no "A:" answer found');
+      items.push({q:b.q, a:b.a});
+    });
+    return {items, problems, warnings:[]};
+  }
+
+  function toQuiz(blocks){
+    const items = [], problems = [], warnings = [];
+    blocks.forEach(b => {
+      if (!b.q) return problems.push('Line '+b.line+': the question is empty');
+      if (!b.a) return problems.push('Line '+b.line+': no "A:" answer found');
+      const kind = detectKind(b);
+      let a = b.a.replace(/\s*\n\s*/g,' ').trim();
+      if (kind === 'tf') a = /^t/i.test(a) ? 'True' : 'False';
+      if (kind === 'blank' || kind === 'short') {
+        const longest = Math.max(...answerAlts(a).map(x => wordCount(x.text)));
+        if (longest > 10) warnings.push('Line '+b.line+': the answer has more than 10 words, so the automatic marking may be less accurate');
+      }
+      items.push({kind, q:b.q, a, x:(b.x||[]).slice(), why:b.why||''});
+    });
+    return {items, problems, warnings};
+  }
+
+  function serialize(item, type){
+    let s = 'Q: '+item.q+'\nA: '+item.a;
+    if (type === 'quiz') {
+      (item.x||[]).forEach(x => s += '\nX: '+x);
+      if (item.why) s += '\nWHY: '+item.why;
+    }
+    return s;
+  }
+
+  function answerAlts(a){
+    return String(a).split(/\s+\|\s+/).map(s => s.trim()).filter(Boolean).map(s => {
+      const keys = []; s.replace(/\*([^*]+)\*/g, (_, k) => { keys.push(k.trim()); return ''; });
+      return {text: s.replace(/\*([^*]+)\*/g,'$1'), keys};
+    });
+  }
+  function showAnswer(a){ const al = answerAlts(a); return al.length ? al[0].text : String(a); }
+
+  function tokens(s){
+    s = String(s).normalize('NFKC').toLowerCase().replace(/[−–]/g,'-').replace(/(\d),(?=\d{3}(?!\d))/g,'$1');
+    return s.match(/(?:(?<=^|[\s(=:])-)?\d+(?:\.\d+)?|[\p{L}\p{M}]+/gu) || [];
+  }
+  const isNum = t => /^-?\d+(\.\d+)?$/.test(t);
+  const isCJK = t => /[぀-ヿ㐀-鿿가-힯]/.test(t);
+
+  function lev(a, b){
+    if (a === b) return 0;
+    const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+    let prev = Array.from({length:n+1}, (_, i) => i);
+    for (let i=1;i<=m;i++){
+      const cur = [i];
+      for (let j=1;j<=n;j++) cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1] + (a[i-1]===b[j-1]?0:1));
+      prev = cur;
+    }
+    return prev[n];
+  }
+
+  function tokEq(u, t, typos){
+    if (u === t) return true;
+    if (isNum(u) || isNum(t)) return isNum(u) && isNum(t) && parseFloat(u) === parseFloat(t);
+    if (isCJK(u) || isCJK(t)) return u.includes(t);
+    if (!typos) return false;
+    const L = Math.min(u.length, t.length);
+    if (L < 5) return false;
+    return lev(u, t) <= (L >= 9 ? 2 : 1);
+  }
+
+  const hasNeg = s => /\b(not|no|never|none|cannot|without)\b|n['’]t\b/i.test(String(s));
+
+  function markTyped(input, answer, opts){
+    const typos = !opts || opts.typos !== false;
+    const inTok = tokens(input); if (!inTok.length) return false;
+    const has = t => inTok.some(u => tokEq(u, t, typos));
+    for (const alt of answerAlts(answer)) {
+      const altTok = tokens(alt.text); if (!altTok.length) continue;
+      if (inTok.join(' ') === altTok.join(' ')) return true;
+      if (hasNeg(input) && !hasNeg(alt.text)) continue;
+      if (!altTok.filter(isNum).every(has)) continue;
+      if (alt.keys.length) {
+        if (alt.keys.every(k => { const kt = tokens(k); return kt.length && kt.every(has); })) return true;
+        continue;
+      }
+      const content = altTok.filter(t => !STOP.has(t));
+      const base = content.length ? content : altTok;
+      if (base.filter(has).length / base.length >= 0.6) return true;
+    }
+    return false;
+  }
+
+  function shuffle(arr, rnd){
+    rnd = rnd || Math.random; const a = arr.slice();
+    for (let i=a.length-1;i>0;i--){ const j = Math.floor(rnd()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+    return a;
+  }
+  // put a missed card back at least `gap` cards later (or at the end if fewer remain)
+  function reinsert(queue, ref, gap, rnd){
+    gap = gap == null ? 3 : gap; rnd = rnd || Math.random;
+    const pos = queue.length <= gap ? queue.length : gap + Math.floor(rnd()*(queue.length-gap+1));
+    queue.splice(pos, 0, ref); return pos;
+  }
+
+  return {parseBlocks, toFlash, toQuiz, detectKind, serialize, answerAlts, showAnswer, tokens, lev, markTyped, shuffle, reinsert, wordCount, hasNeg};
+})();
+/*CORE-END*/
+</script>
+
+<script>
+/* ============ prompts ============ */
+const PROMPTS = {
+normal:{
+flash:String.raw`You are helping me make revision flashcards. Read the material I give you (lecture slides, notes, text or an infographic) and pull out every key fact, term, definition, process and example that could come up in an exam.
+
+Write the flashcards in exactly this format:
+
+Q: <a clear question or a topic name>
+A: <the main answer in one short line>
+- <supporting point, only if needed>
+- <supporting point, only if needed>
+
+Rules:
+1. Start every card with "Q:" and put "A:" on the next line. Leave one blank line between cards.
+2. One idea per card. Split a big topic into several cards.
+3. Keep answers short and easy to memorise. Use "- " bullet points for lists, with at most 5 bullets per card.
+4. Do not start any other line with "Q:", "A:", "X:" or "WHY:".
+5. Use plain text only. No tables, no bold, no headings, no card numbers.
+6. For simple science notation, type the real characters (H₂O, CO₂, x²) or write H_2O and x^2.
+7. Keep the same language as my material. Use only facts from my material and do not invent anything.
+8. Cover the whole material. Put all the cards in one code block so I can copy them, and write nothing before or after it.
+
+Here is my material:
+`,
+quiz:String.raw`You are helping me make a revision quiz. Read the material I give you (lecture slides, notes, text or an infographic) and write questions that test the key facts.
+
+Write 20 questions (or as many as the material supports) with a mix of four types: about 40% multiple choice, 20% true/false, 20% fill in the blank and 20% short answer. Mix the types up, do not group them.
+
+Use exactly the format of the sample below, with one blank line between questions. The sample only shows the layout of the four question types. Do not copy any sample question into your answer, and do not let its topic influence your questions.
+
+=== FORMAT SAMPLE START ===
+Q: Which gas do plants absorb during photosynthesis?
+A: Carbon dioxide
+X: Oxygen
+X: Nitrogen
+X: Hydrogen
+WHY: Plants use carbon dioxide and water to make glucose.
+
+Q: Plants make their food at night.
+A: False
+WHY: Photosynthesis needs sunlight.
+
+Q: Plants absorb ____ through their roots.
+A: *water*
+
+Q: Which pigment makes leaves green?
+A: *chlorophyll* | chlorophyl
+=== FORMAT SAMPLE END ===
+
+Rules:
+1. Multiple choice: put the one correct answer on the "A:" line and exactly three wrong options on "X:" lines. Wrong options must be believable, similar in length to the correct answer, and clearly wrong. Never use "all of the above" or "none of the above".
+2. True/false: write a statement as the question, and write only True or False on the "A:" line. Use a balanced number of True and False.
+3. Fill in the blank: use exactly four underscores ____ for the blank, and only one blank per question.
+4. Fill in the blank and short answer: the answer must be 1 to 5 words where possible and never more than 10 words. Put *stars* around the key word or words that a correct answer must contain. If other spellings or synonyms are also correct, add them after " | ".
+5. "WHY:" is one short line that explains the answer. Add it where it helps.
+6. Do not start any other line with "Q:", "A:", "X:" or "WHY:". Use plain text only. No bold, no headings, no question numbers.
+7. For simple science notation, type the real characters (H₂O, CO₂, x²) or write H_2O and x^2.
+8. Keep the same language as my material. Use only facts from my material and do not invent anything.
+9. Every question must come from my material below, not from the format sample.
+10. Put all the questions in one code block so I can copy them, and write nothing before or after it.
+
+Here is my material:
+`},
+math:{
+flash:String.raw`You are helping me make revision flashcards for a maths-heavy subject (for example engineering, physics or mathematics). Read the material I give you and pull out every key formula, definition, law, theorem, condition, unit and standard method that could come up in an exam.
+
+Write the flashcards in exactly this format:
+
+Q: <a clear question or a topic name>
+A: <the main answer in one short line>
+- <supporting point, only if needed>
+- <supporting point, only if needed>
+
+Maths rules (very important):
+1. Write ALL maths in LaTeX. Use $...$ for maths inside a sentence, for example $V = IR$.
+2. Put any long or important equation on its own line between $$ and $$, for example $$X_C = \frac{1}{2\pi f C}$$
+3. Always write fractions with \frac{a}{b}. Never write a/b.
+4. Use proper commands: \sqrt{x}, x^{2}, x_{n}, \int_{a}^{b}, \sum_{k=1}^{n}, \vec{E}, \omega, \Omega, \times, \cdot, \le, \approx.
+5. Write units in upright text with a thin space, for example $4.7\,\text{k}\Omega$ or $9.81\,\text{m/s}^2$.
+6. For a derivation or a method with several steps, write one step per "- " bullet, with one equation per bullet.
+7. After each formula, add one bullet that says what each symbol means and its unit.
+
+Format rules:
+8. Start every card with "Q:" and put "A:" on the next line. Leave one blank line between cards.
+9. One idea per card. Do not start any other line with "Q:", "A:", "X:" or "WHY:".
+10. No tables, no bold, no headings, no card numbers.
+11. Keep the same language as my material. Use only content from my material, copy every formula accurately, and do not invent anything.
+12. Put all the cards in one code block so I can copy them, and write nothing before or after it.
+
+Here is my material:
+`,
+quiz:String.raw`You are helping me make a revision quiz for a maths-heavy subject (for example engineering, physics or mathematics). Read the material I give you and write questions that test the key formulas, definitions, conditions, units and short calculations.
+
+Write 20 questions (or as many as the material supports) with a mix of four types: about 50% multiple choice, 15% true/false, 15% fill in the blank and 20% short answer. Mix the types up, do not group them.
+
+Use exactly the format of the sample below, with one blank line between questions. The sample only shows the layout of the four question types. Do not copy any sample question into your answer, and do not let its topic influence your questions.
+
+=== FORMAT SAMPLE START ===
+Q: What is the reactance of a capacitor?
+A: $X_C = \frac{1}{2\pi f C}$
+X: $X_C = 2\pi f C$
+X: $X_C = \frac{2\pi f}{C}$
+X: $X_C = \frac{C}{2\pi f}$
+WHY: Capacitive reactance falls when the frequency or the capacitance rises.
+
+Q: The total resistance of resistors in parallel is always smaller than the smallest resistor.
+A: True
+
+Q: A $12\,\text{V}$ source drives a current of $2\,\text{A}$. The resistance is ____ Ω.
+A: *6*
+WHY: $R = \frac{V}{I} = \frac{12}{2} = 6\,\Omega$
+
+Q: Which law states that the sum of currents entering a node equals the sum leaving it?
+A: *Kirchhoff* current law | KCL
+=== FORMAT SAMPLE END ===
+
+Maths rules (very important):
+1. Write ALL maths in questions, options and WHY lines in LaTeX. Use $...$ inside a sentence and $$...$$ on its own line for a long equation.
+2. Always write fractions with \frac{a}{b}. Never write a/b. Use proper commands such as \sqrt{x}, x^{2}, x_{n}, \int, \sum, \omega, \Omega, \times, \cdot.
+3. Write units in upright text with a thin space, for example $4.7\,\text{k}\Omega$.
+4. Fill in the blank and short answer: I type these answers on a keyboard, so the "A:" line must be a plain number, a number with a unit, or a few plain words, with NO LaTeX and no dollar signs. State the unit and the rounding in the question. Put *stars* around the key number or key word. Add other accepted forms after " | ", for example A: *0.5* | 1/2
+5. Test formula recall with multiple choice, not with typed answers. Make the three wrong formulas look like common mistakes (wrong sign, inverted fraction, missing factor).
+
+Format rules:
+6. Multiple choice: one correct answer on the "A:" line and exactly three wrong options on "X:" lines. Never use "all of the above" or "none of the above".
+7. True/false: write only True or False on the "A:" line. Use a balanced number of each.
+8. Fill in the blank: use exactly four underscores ____ and only one blank per question.
+9. "WHY:" is one short line that explains the answer or shows the working. Add it to every calculation.
+10. Do not start any other line with "Q:", "A:", "X:" or "WHY:". No bold, no headings, no question numbers.
+11. Keep the same language as my material. Use only content from my material, check every calculation, and do not invent anything.
+12. Every question must come from my material below, not from the format sample.
+13. Put all the questions in one code block so I can copy them, and write nothing before or after it.
+
+Here is my material:
+`}
+};
+
+/* ============ data ============ */
+const PALETTE = [
+  {k:'lemon', n:'Lemon',  bg:'#FFF3B8', mid:'#F6D860', deep:'#7A5C00'},
+  {k:'peach', n:'Peach',  bg:'#FFDFC8', mid:'#F9B48A', deep:'#8A4B1E'},
+  {k:'coral', n:'Coral',  bg:'#FFD3CB', mid:'#F7A193', deep:'#8C3526'},
+  {k:'rose',  n:'Rose',   bg:'#FFD6E0', mid:'#F59DB4', deep:'#8E2F4D'},
+  {k:'lilac', n:'Lilac',  bg:'#EADBFF', mid:'#C4A3F5', deep:'#5B3A93'},
+  {k:'peri',  n:'Periwinkle', bg:'#DAE0FF', mid:'#A5B0F5', deep:'#36418F'},
+  {k:'sky',   n:'Sky',    bg:'#D3EAFF', mid:'#94C6F5', deep:'#24598C'},
+  {k:'aqua',  n:'Aqua',   bg:'#CDF3F3', mid:'#86D9D9', deep:'#1C6464'},
+  {k:'mint',  n:'Mint',   bg:'#D0F5E3', mid:'#8FDDB8', deep:'#1F6B4A'},
+  {k:'matcha',n:'Matcha', bg:'#E3F1C8', mid:'#BBDB86', deep:'#4A6418'}
+];
+const LS = 'mochiCards.v1';
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-3);
+const blank = () => ({version:1, subjects:[], topics:[], decks:[], sessions:{}, meta:{lastBackup:0},
+  prefs:{flash:{order:'shuffle',weak:false,reverse:false}, quiz:{mode:'grind',order:'shuffle',limit:'',typos:true,weak:false}},
+  ui:{ws:'normal', view:{name:'home'}}});
+let db = load();
+function load(){
+  try { const d = JSON.parse(localStorage.getItem(LS)); if (d && d.version === 1) return fix(d); } catch(e){}
+  return blank();
+}
+function fix(d){
+  const b = blank();
+  for (const k of ['subjects','topics','decks']) if (!Array.isArray(d[k])) d[k] = [];
+  d.sessions = d.sessions || {}; d.meta = d.meta || b.meta;
+  d.prefs = {flash:{...b.prefs.flash, ...(d.prefs||{}).flash}, quiz:{...b.prefs.quiz, ...(d.prefs||{}).quiz}};
+  d.ui = {...b.ui, ...(d.ui||{})};
+  return d;
+}
+let saveFailed = false;
+function save(){
+  try { localStorage.setItem(LS, JSON.stringify(db)); saveFailed = false; }
+  catch(e){ if (!saveFailed) toast('Could not save. Storage may be full or blocked.'); saveFailed = true; }
+}
+
+const subj = id => db.subjects.find(s => s.id === id);
+const topic = id => db.topics.find(t => t.id === id);
+const deck = id => db.decks.find(d => d.id === id);
+const topicsOf = sid => db.topics.filter(t => t.subjectId === sid);
+const decksOf = tid => db.decks.filter(d => d.topicId === tid);
+const colour = s => PALETTE.find(p => p.k === (s && s.color)) || PALETTE[3];
+const mixHex = (a, b, w) => '#' + [1,3,5].map(i => Math.round(parseInt(a.slice(i,i+2),16)*w + parseInt(b.slice(i,i+2),16)*(1-w)).toString(16).padStart(2,'0')).join('');
+const isDark = () => db.ui.theme === 'dark';
+const cvars = c => isDark() ? `--bg:${mixHex(c.mid,'#2B2634',.26)};--mid:${c.mid};--deep:${c.bg};--onmid:${c.deep}` : `--bg:${c.bg};--mid:${c.mid};--deep:${c.deep};--onmid:${c.deep}`;
+const cstyle = s => cvars(colour(s));
+const newStats = () => ({seen:0, wrong:0, streak:0});
+const isWeak = it => it.stats && it.stats.wrong > 0 && it.stats.streak < 2;
+
+function scopeSubject(sc){
+  if (sc.t === 'subject') return subj(sc.id);
+  if (sc.t === 'topic') { const t = topic(sc.id); return t && subj(t.subjectId); }
+  const d = deck(sc.id), t = d && topic(d.topicId); return t && subj(t.subjectId);
+}
+function scopeDecks(kind, sc){
+  if (sc.t === 'deck') { const d = deck(sc.id); return d && d.type === kind ? [d] : []; }
+  const tids = sc.t === 'topic' ? [sc.id] : topicsOf(sc.id).map(t => t.id);
+  return db.decks.filter(d => d.type === kind && tids.includes(d.topicId));
+}
+function scopeName(sc){
+  if (sc.t === 'deck') return (deck(sc.id)||{}).name;
+  if (sc.t === 'topic') return 'All of ' + (topic(sc.id)||{}).name;
+  return 'All of ' + (subj(sc.id)||{}).name;
+}
+const scopeRefs = (kind, sc) => scopeDecks(kind, sc).flatMap(d => d.items.map(it => d.id + '|' + it.id));
+function getRef(ref){
+  const [did, iid] = ref.split('|'); const d = deck(did); if (!d) return null;
+  const item = d.items.find(i => i.id === iid); return item ? {deck:d, item} : null;
+}
+const skey = (kind, sc) => kind + ':' + sc.t + ':' + sc.id;
+function liveSession(key){ const s = db.sessions[key]; return s && !s.done && !s.submitted ? s : null; }
+function bump(item, ok){
+  item.stats = item.stats || newStats(); item.stats.seen++;
+  if (ok) item.stats.streak++; else { item.stats.wrong++; item.stats.streak = 0; }
+}
+
+/* ============ rendering helpers ============ */
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function tex(src){
+  const disp = src.startsWith('$$'); const body = src.slice(disp?2:1, disp?-2:-1).trim();
+  if (window.katex) { try { return katex.renderToString(body, {displayMode:disp, throwOnError:false, strict:'ignore'}); } catch(e){} }
+  return `<code class="rawtex">${esc(src)}</code>`;
+}
+function inline(s){
+  return esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/_{3,}/g, '<span class="blank"></span>')
+    .replace(/([A-Za-z0-9)\]])_(?:\{([^}]+)\}|(\d+|[A-Za-z](?![A-Za-z])))/g, (m, a, b, c) => `${a}<sub>${b||c}</sub>`)
+    .replace(/\^(?:\{([^}]+)\}|([+\-−]?\d+|[A-Za-z](?![A-Za-z])))/g, (m, b, c) => `<sup>${b||c}</sup>`);
+}
+function rich(text, math){
+  text = String(text ?? ''); const held = [];
+  if (math) text = text.replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$/g, m => { held.push(tex(m)); return '' + (held.length-1) + ''; });
+  const out = []; let list = null;
+  text.split('\n').forEach(line => {
+    const b = line.match(/^\s*(?:[-•]|\*(?!\*))\s+(.*)$/);
+    if (b) { if (!list) { list = []; out.push(list); } list.push(inline(b[1])); }
+    else { list = null; out.push(inline(line)); }
+  });
+  let html = '', prevText = false;
+  out.forEach(o => {
+    if (Array.isArray(o)) { html += '<ul>' + o.map(li => '<li>'+li+'</li>').join('') + '</ul>'; prevText = false; }
+    else { if (prevText) html += '<br>'; html += o; prevText = true; }
+  });
+  return html.replace(/(\d+)/g, (m, i) => held[+i]);
+}
+const plainQ = (t, n) => { t = String(t).replace(/\s+/g,' '); return t.length > n ? t.slice(0, n-1) + '…' : t; };
+
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2400); }
+
+let modalActs = {};
+function openModal(html, acts){ modalActs = acts || {}; const m = $('#modal'); m.innerHTML = `<div class="sheet">${html}</div>`; m.classList.add('on'); const f = m.querySelector('[autofocus]'); if (f) setTimeout(() => f.focus(), 60); }
+function closeModal(){ $('#modal').classList.remove('on'); $('#modal').innerHTML = ''; modalActs = {}; }
+function confirmBox(title, msg, okLabel, danger){
+  return new Promise(res => openModal(
+    `<h3>${esc(title)}</h3><p class="hint">${esc(msg)}</p><div class="row end"><button class="btn" data-m="no">Cancel</button><button class="btn pri ${danger?'danger':''}" data-m="yes">${esc(okLabel)}</button></div>`,
+    {no(){ closeModal(); res(false); }, yes(){ closeModal(); res(true); }}));
+}
+async function copyText(t){
+  try { await navigator.clipboard.writeText(t); }
+  catch(e){ const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch(e2){} ta.remove(); }
+  toast('Copied ✨');
+}
+
+/* ============ router ============ */
+let view = db.ui.view || {name:'home'};
+let after = null;
+function nav(v, replace){
+  view = v; db.ui.view = v; save();
+  try { history[replace ? 'replaceState' : 'pushState'](v, ''); } catch(e){}
+  render(); window.scrollTo(0, 0);
+}
+window.addEventListener('popstate', e => { view = e.state || {name:'home'}; db.ui.view = view; save(); closeModal(); render(); });
+function viewSubject(){
+  if (view.name === 'subject') return subj(view.id);
+  if (view.name === 'study' || view.name === 'flash' || view.name === 'quiz') return scopeSubject(view.sc);
+  if (view.name === 'edit') return scopeSubject({t:'deck', id:view.id});
+  return null;
+}
+function render(){
+  const fn = {home:vHome, subject:vSubject, study:vStudy, edit:vEdit, flash:vFlash, quiz:vQuiz}[view.name] || vHome;
+  after = null;
+  let html = fn(view);
+  if (html === null) { view = {name:'home'}; db.ui.view = view; html = vHome(); }
+  const s = viewSubject();
+  const math = s ? s.ws === 'math' : db.ui.ws === 'math';
+  document.body.classList.toggle('math', math);
+  document.body.classList.toggle('dark', isDark());
+  document.body.style.cssText = s ? cstyle(s) : cvars(PALETTE[math ? 5 : 3]);
+  const tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.content = isDark() ? '#1E1A25' : '#FFF8F1';
+  app.innerHTML = html;
+  if (after) after();
+}
+const isMath = () => document.body.classList.contains('math');
+
+/* ============ home ============ */
+function vHome(){
+  const ws = db.ui.ws, math = ws === 'math';
+  const subs = db.subjects.filter(s => (s.ws||'normal') === ws);
+  const conts = Object.values(db.sessions).filter(s => !s.done && !s.submitted && scopeSubject(s.sc) && (scopeSubject(s.sc).ws||'normal') === ws);
+  const days = db.meta.lastBackup ? Math.floor((Date.now() - db.meta.lastBackup) / 864e5) : null;
+  const P = PROMPTS[ws];
+  return `
+  <div class="top">
+    <div class="brand"><div class="logo">🍮</div><div><h1>Revision Tool</h1><p>flashcards and quizzes for revision</p></div></div>
+    <div class="top-r"><div class="ws"><button class="${math?'':'on'}" data-act="ws" data-v="normal">🌸 Classic</button><button class="${math?'on':''}" data-act="ws" data-v="math">🧮 Asian mode</button></div>
+      <button class="icon" data-act="theme" title="${isDark() ? 'Switch to light mode' : 'Switch to dark mode'}" aria-label="${isDark() ? 'Switch to light mode' : 'Switch to dark mode'}">${isDark() ? '☀️' : '🌙'}</button></div>
+  </div>
+  ${math ? `<p class="hint" style="margin-top:-8px">Asian mode shows full mathematical notation. Write maths between dollar signs, for example <code class="rawtex">$\\frac{3}{4}$</code>. ${window.katex ? '' : 'The maths display needs an internet connection the first time.'}</p>` : ''}
+  ${conts.length ? `<div class="sec"><h2>Continue where you stopped</h2></div>` + conts.map(s => {
+      const sb = scopeSubject(s.sc);
+      const p = s.kind === 'flash' ? `${s.mastered.length} of ${s.total} mastered` : s.mode === 'exam' ? `Exam mode · ${Object.keys(s.answers).length} of ${s.refs.length} answered` : `Grind mode · ${s.doneRefs.length} of ${s.total} done`;
+      return `<div class="cont" style="${cstyle(sb)}"><div><b>${s.kind==='flash'?'🃏':'❓'} ${esc(scopeName(s.sc))}</b><span>${esc(sb.name)} · ${p}</span></div><button class="btn small pri" data-act="resume" data-key="${esc(s.key)}">Resume</button></div>`;
+    }).join('') : ''}
+  <div class="sec"><h2>My subjects</h2><span class="hint">${subs.length ? 'Tap a folder to open it' : ''}</span></div>
+  <div class="grid">
+    ${subs.map(s => { const ts = topicsOf(s.id), ds = db.decks.filter(d => ts.some(t => t.id === d.topicId));
+      return `<button class="folder" style="${cstyle(s)}" data-act="open-subject" data-id="${s.id}"><b>${esc(s.name)}</b><span>${ts.length} topic${ts.length===1?'':'s'} · ${ds.length} deck${ds.length===1?'':'s'}</span></button>`; }).join('')}
+    <button class="folder new" data-act="new-subject">＋ New subject</button>
+  </div>
+
+  <div class="sec"><h2>Tools</h2></div>
+  <details class="panel"><summary>✨ AI prompt helper</summary>
+    <p class="hint">Copy a prompt, paste it into any AI model, then add your slides, notes or text after it. Paste the AI's reply into "New flashcards" or "New quiz".</p>
+    <h3>Prompt for flashcards</h3><pre class="code">${esc(P.flash)}</pre>
+    <button class="btn small pri" data-act="copy-prompt" data-k="flash">Copy flashcard prompt</button>
+    <h3 style="margin-top:16px">Prompt for quizzes</h3><pre class="code">${esc(P.quiz)}</pre>
+    <button class="btn small pri" data-act="copy-prompt" data-k="quiz">Copy quiz prompt</button>
+  </details>
+  <details class="panel"><summary>📝 Format cheat sheet</summary>
+    <p class="hint">You can also type cards by hand. Leave a blank line between cards.</p>
+<pre class="code">Q: question or topic            (flashcard)
+A: main answer
+- extra point
+- extra point
+
+Q: question                     (multiple choice)
+A: correct answer
+X: wrong option
+X: wrong option
+X: wrong option
+WHY: short explanation (optional)
+
+Q: a statement                  (true or false)
+A: True
+
+Q: Plants absorb ____ by roots. (fill in the blank)
+A: *water*
+
+Q: question                     (short typed answer)
+A: *key word* rest | other accepted answer</pre>
+    <p class="hint">*Stars* mark the key word that a typed answer must contain. " | " adds another accepted answer. ${math ? 'In Asian mode, write maths as $V = IR$ and long equations as $$ ... $$.' : 'H_2O and x^2 display as H<sub>2</sub>O and x<sup>2</sup>.'}</p>
+  </details>
+  <details class="panel" ${days === null && db.decks.length || days > 7 ? 'open' : ''}><summary>💾 Backup and devices</summary>
+    <p class="hint">Your decks live in this browser on this device only. Export a backup file to keep them safe, or import it on another device to move everything, unfinished sessions included.</p>
+    <div class="row"><button class="btn small pri" data-act="export">Export backup</button><button class="btn small" data-act="import">Import backup</button></div>
+    <p class="hint" style="margin-top:10px">Last backup: ${days === null ? 'never' : days === 0 ? 'today' : days + ' day' + (days===1?'':'s') + ' ago'}</p>
+    ${db.decks.length && (days === null || days > 7) ? `<div class="nudge">🌼 It has been a while. Export a backup so your cards stay safe.</div>` : ''}
+    <ol class="steps"><li><b>iPad and iPhone:</b> open this page in Safari, tap Share, then "Add to Home Screen". Safari keeps the data of Home Screen pages, and it can delete the data of ordinary pages after about a week without a visit.</li><li>Private browsing tabs erase everything when you close them.</li></ol>
+    <input type="file" id="imp" accept="application/json,.json" hidden>
+  </details>`;
+}
+
+/* ============ subject ============ */
+function deckTile(d){
+  const live = liveSession(skey(d.type, {t:'deck', id:d.id}));
+  return `<button class="deck ${d.type}" data-act="open-study" data-kind="${d.type}" data-t="deck" data-id="${d.id}">
+    ${live ? '<span class="dot">in progress</span>' : ''}<b>${esc(d.name)}</b>
+    <small>${d.type==='flash' ? '🃏 Flashcards' : '❓ Quiz'} · ${d.items.length}</small></button>`;
+}
+function vSubject(v){
+  const s = subj(v.id); if (!s) return null;
+  const ts = topicsOf(s.id);
+  const nF = scopeDecks('flash', {t:'subject', id:s.id}).length, nQ = scopeDecks('quiz', {t:'subject', id:s.id}).length;
+  return `
+  <div class="bar"><button class="back" data-act="home">←</button><h2>${esc(s.name)}</h2><button class="icon" data-act="edit-subject" data-id="${s.id}">✏️</button></div>
+  ${nF > 1 || nQ > 1 ? `<div class="row" style="margin-bottom:14px">
+     ${nF > 1 ? `<button class="btn small soft" data-act="open-study" data-kind="flash" data-t="subject" data-id="${s.id}">🃏 Study the whole subject</button>` : ''}
+     ${nQ > 1 ? `<button class="btn small soft" data-act="open-study" data-kind="quiz" data-t="subject" data-id="${s.id}">❓ Quiz on the whole subject</button>` : ''}</div>` : ''}
+  ${ts.length ? '' : `<div class="empty">No topics yet. Add a topic, then put flashcards and quizzes inside it.</div>`}
+  ${ts.map(t => { const ds = decksOf(t.id); const f = ds.filter(d => d.type==='flash'), q = ds.filter(d => d.type==='quiz');
+    return `<div class="topic"><div class="topic-h"><h3>${esc(t.name)}</h3>
+      ${f.length > 1 ? `<button class="btn small soft" data-act="open-study" data-kind="flash" data-t="topic" data-id="${t.id}">🃏 All</button>` : ''}
+      ${q.length > 1 ? `<button class="btn small soft" data-act="open-study" data-kind="quiz" data-t="topic" data-id="${t.id}">❓ All</button>` : ''}
+      <button class="icon" data-act="edit-topic" data-id="${t.id}">✏️</button></div>
+      <div class="decks">${f.map(deckTile).join('')}${q.map(deckTile).join('')}
+        <button class="deck add" data-act="new-deck" data-type="flash" data-id="${t.id}">＋ New flashcards</button>
+        <button class="deck add" data-act="new-deck" data-type="quiz" data-id="${t.id}">＋ New quiz</button></div></div>`; }).join('')}
+  <button class="btn pri" data-act="new-topic" data-id="${s.id}">＋ New topic</button>`;
+}
+
+/* ============ study (start screen) ============ */
+function seg(kind, k, opts){ const cur = db.prefs[kind][k]; return `<div class="seg">${opts.map(([v, l]) => `<button class="${cur===v?'on':''}" data-act="pref" data-kind="${kind}" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`; }
+function tog(kind, k){ return `<button class="tog ${db.prefs[kind][k]?'on':''}" data-act="pref" data-kind="${kind}" data-k="${k}" data-v="toggle" aria-label="toggle"></button>`; }
+function vStudy(v){
+  const sc = v.sc, kind = v.kind, s = scopeSubject(sc); if (!s) return null;
+  if (sc.t === 'deck' && !deck(sc.id)) return null;
+  const refs = scopeRefs(kind, sc), items = refs.map(r => getRef(r).item);
+  const weak = items.filter(isWeak).length;
+  const key = skey(kind, sc), live = liveSession(key);
+  const P = db.prefs[kind];
+  const head = `<div class="bar"><button class="back" data-act="open-subject" data-id="${s.id}">←</button><div style="flex:1;min-width:0"><h2>${esc(scopeName(sc))}</h2><div class="sub">${kind==='flash'?'🃏 Flashcards':'❓ Quiz'} · ${items.length} ${kind==='flash'?'card':'question'}${items.length===1?'':'s'}${weak ? ' · ' + weak + ' weak' : ''}</div></div>
+    ${sc.t === 'deck' ? `<button class="icon" data-act="open-edit" data-id="${sc.id}">✏️</button>` : ''}</div>`;
+  if (!items.length) return head + `<div class="empty">This deck is empty.</div>`;
+  let resume = '';
+  if (live) {
+    const p = kind === 'flash' ? `${live.mastered.length} of ${live.total} mastered` : live.mode === 'exam' ? `Exam mode, ${Object.keys(live.answers).length} of ${live.refs.length} answered` : `Grind mode, ${live.doneRefs.length} of ${live.total} done`;
+    resume = `<div class="panel" style="background:var(--bg)"><h3>You have an unfinished session</h3><p class="hint" style="color:var(--deep)">${p}</p><button class="btn big pri" data-act="resume" data-key="${esc(key)}">Resume</button></div>`;
+  }
+  const opts = kind === 'flash' ? `
+    <div class="opt-row"><div><b>Order</b><small>Missed cards always come back at random</small></div>${seg('flash','order',[['shuffle','Shuffle'],['order','In order']])}</div>
+    <div class="opt-row"><div><b>Weak cards only</b><small>${weak} card${weak===1?'':'s'} you missed before</small></div>${tog('flash','weak')}</div>
+    <div class="opt-row"><div><b>Reverse mode</b><small>Show the answer first, recall the question</small></div>${tog('flash','reverse')}</div>` : `
+    <div class="opt-row"><div><b>Mode</b><small>${P.mode==='grind' ? 'Grind: see the answer after each question. Wrong questions repeat.' : 'Exam: answers stay hidden until you submit. No repeats.'}</small></div>${seg('quiz','mode',[['grind','Grind'],['exam','Exam']])}</div>
+    <div class="opt-row"><div><b>Order</b></div>${seg('quiz','order',[['shuffle','Shuffle'],['order','In order']])}</div>
+    <div class="opt-row"><div><b>Number of questions</b><small>Leave empty for all ${items.length}</small></div><input class="in" style="width:96px" type="number" min="1" inputmode="numeric" placeholder="All" value="${esc(P.limit)}" data-change="limit"></div>
+    <div class="opt-row"><div><b>Accept small typos</b><small>One wrong letter in a long word still counts</small></div>${tog('quiz','typos')}</div>
+    <div class="opt-row"><div><b>Weak questions only</b><small>${weak} question${weak===1?'':'s'} you missed before</small></div>${tog('quiz','weak')}</div>`;
+  return head + resume + `<div class="panel">${opts}</div>
+    <div class="row"><button class="btn big pri" data-act="start" >${live ? 'Start a new session' : kind==='flash' ? 'Start flashcards' : 'Start quiz'}</button></div>`;
+}
+
+/* ============ editor ============ */
+function vEdit(v){
+  const d = deck(v.id); if (!d) return null;
+  const text = d.items.map(it => Core.serialize(it, d.type)).join('\n\n');
+  after = () => checkDraft(d.type, $('#ed-text').value, $('#ed-check'));
+  return `<div class="bar"><button class="back" data-act="open-study" data-kind="${d.type}" data-t="deck" data-id="${d.id}">←</button><h2>Edit ${d.type==='flash'?'flashcards':'quiz'}</h2></div>
+  <div class="panel"><label class="f" style="margin-top:0">Name</label><input class="in" id="ed-name" value="${esc(d.name)}" maxlength="60">
+  <label class="f">${d.type==='flash'?'Cards':'Questions'} (edit, add or delete, then save)</label>
+  <textarea class="in" id="ed-text" style="min-height:44vh" data-input="draft" data-type="${d.type}" spellcheck="false">${esc(text)}</textarea>
+  <div class="check" id="ed-check"></div></div>
+  <div class="row"><button class="btn pri" data-act="save-edit" data-id="${d.id}">Save changes</button><button class="btn" data-act="copy-deck" data-id="${d.id}">Copy as text</button><button class="btn danger" data-act="del-deck" data-id="${d.id}">Delete deck</button></div>`;
+}
+function parseDraft(type, text){ const b = Core.parseBlocks(text); return type === 'flash' ? Core.toFlash(b) : Core.toQuiz(b); }
+function checkDraft(type, text, el){
+  if (!el) return; if (!text.trim()) { el.innerHTML = ''; return; }
+  const r = parseDraft(type, text); let h = '';
+  if (type === 'flash') h = `<span class="good">✅ ${r.items.length} card${r.items.length===1?'':'s'} found</span>`;
+  else { const c = k => r.items.filter(i => i.kind === k).length;
+    h = `<span class="good">✅ ${r.items.length} question${r.items.length===1?'':'s'} found</span> <span class="hint">(${c('mcq')} multiple choice · ${c('tf')} true/false · ${c('blank')} blank · ${c('short')} short answer)</span>`; }
+  if (!r.items.length) h = `<span class="bad">No ${type==='flash'?'cards':'questions'} found yet. Each one needs a "Q:" line and an "A:" line.</span>`;
+  r.problems.slice(0,3).forEach(p => h += `<br><span class="bad">⚠️ Skipped. ${esc(p)}</span>`);
+  if (r.problems.length > 3) h += `<br><span class="bad">and ${r.problems.length-3} more skipped</span>`;
+  r.warnings.slice(0,2).forEach(p => h += `<br><span class="hint">💡 ${esc(p)}</span>`);
+  el.innerHTML = h;
+}
+
+/* ============ flashcards ============ */
+let F = {flipped:false, seen:false, busy:false};
+function startFlash(sc, only){
+  const P = db.prefs.flash; let refs = only || scopeRefs('flash', sc);
+  if (!only && P.weak) refs = refs.filter(r => isWeak(getRef(r).item));
+  if (!refs.length) return toast(P.weak ? 'No weak cards here. Well done!' : 'No cards to study.');
+  const key = skey('flash', sc);
+  db.sessions[key] = {kind:'flash', key, sc, opts:{reverse:P.reverse}, queue: P.order === 'shuffle' ? Core.shuffle(refs) : refs.slice(), mastered:[], total:refs.length, misses:{}, swipes:0, hist:[], done:false, at:Date.now()};
+  F = {flipped:false, seen:false, busy:false};
+  nav({name:'flash', sc});
+}
+function cleanFlash(s){
+  s.queue = s.queue.filter(getRef); s.mastered = s.mastered.filter(getRef); s.total = s.queue.length + s.mastered.length;
+  if (!s.queue.length && s.total) s.done = true;
+}
+function vFlash(v){
+  const key = skey('flash', v.sc), s = db.sessions[key]; if (!s || !scopeSubject(v.sc)) return null;
+  cleanFlash(s); if (!s.total) { delete db.sessions[key]; save(); return null; }
+  const math = scopeSubject(v.sc).ws === 'math';
+  const backBtn = `<button class="back" data-act="open-study" data-kind="flash" data-t="${v.sc.t}" data-id="${v.sc.id}">←</button>`;
+  if (s.done) {
+    const miss = Object.entries(s.misses).filter(([r]) => getRef(r)).sort((a, b) => b[1] - a[1]);
+    const first = s.total - miss.length;
+    return `<div class="bar">${backBtn}<h2>${esc(scopeName(v.sc))}</h2></div>
+    <div class="score"><div class="ring" style="--p:${Math.round(first/s.total*100)}"><div><span>${first}/${s.total}<small>first try</small></span></div></div>
+      <h2>${miss.length ? 'All cards mastered! 🎉' : 'Perfect round! 🌟'}</h2><p class="hint">${s.swipes} swipe${s.swipes===1?'':'s'} for ${s.total} card${s.total===1?'':'s'}</p></div>
+    ${miss.length ? `<div class="sec"><h2>Cards you missed most</h2></div>` + miss.slice(0, 12).map(([r, n]) => `<div class="miss"><i>×${n}</i><div>${rich(plainQ(getRef(r).item.q, 140), math)}</div></div>`).join('') : ''}
+    <div class="row" style="margin-top:16px;justify-content:center">
+      ${miss.length ? `<button class="btn pri" data-act="flash-missed">Study missed cards (${miss.length})</button>` : ''}
+      <button class="btn" data-act="flash-again">Study again</button>
+      <button class="btn" data-act="finish" data-kind="flash">Done</button></div>`;
+  }
+  const {item} = getRef(s.queue[0]); const rev = s.opts.reverse;
+  const front = rev ? item.a : item.q, back = rev ? item.q : item.a;
+  const cls = t => t.length > 380 ? 'xlong' : t.length > 150 ? 'long' : '';
+  after = bindCard;
+  return `<div class="bar">${backBtn}<h2>${esc(scopeName(v.sc))}</h2><button class="icon" data-act="edit-item" data-ref="${esc(s.queue[0])}">✏️</button></div>
+  <div class="prog"><div class="track"><div class="fill" style="width:${s.mastered.length/s.total*100}%"></div></div><span>${s.mastered.length} / ${s.total} mastered</span></div>
+  <div class="fc-stage"><div class="fc" id="fc">
+    <span class="stamp l">Again</span><span class="stamp r">Got it</span>
+    <div class="fc-inner ${F.flipped?'flip':''}" id="fci">
+      <div class="face f-front"><span class="tag">${rev?'Answer':'Question'}</span><div class="txt ${cls(front)}"><div>${rich(front, math)}</div></div><span class="tap">tap to flip</span></div>
+      <div class="face f-back"><span class="tag">${rev?'Question':'Answer'}</span><div class="txt ${cls(back)}"><div>${rich(back, math)}</div></div><span class="tap">swipe left = again · swipe right = got it</span></div>
+    </div></div></div>
+  <div class="fc-btns">
+    <button class="round mid" data-act="f-undo" ${s.hist.length?'':'disabled'} title="Undo">↩</button>
+    <button class="round no" data-act="f-left" title="Again">✗</button>
+    <button class="round mid" data-act="f-flip" title="Flip">⟲</button>
+    <button class="round ok" data-act="f-right" title="Got it">✓</button>
+    <span style="width:52px"></span>
+  </div>
+  <div class="keys">Space = flip · ← = again · → = got it · Z = undo</div>`;
+}
+function flipCard(){ F.flipped = !F.flipped; if (F.flipped) F.seen = true; const i = $('#fci'); if (i) i.classList.toggle('flip', F.flipped); }
+function flashAnswer(ok){
+  const s = db.sessions[skey('flash', view.sc)]; if (!s || s.done || F.busy) return;
+  const el = $('#fc');
+  if (ok && !F.seen) { toast('Flip the card and check the answer first 👀'); if (el) { el.style.transition = ''; el.style.transform = ''; el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); } return; }
+  F.busy = true;
+  if (el) { el.style.transition = 'transform .22s ease-in, opacity .22s'; el.style.transform = `translateX(${ok?130:-130}vw) rotate(${ok?18:-18}deg)`; el.style.opacity = '0'; }
+  setTimeout(() => {
+    const ref = s.queue[0], g = getRef(ref);
+    s.hist.push({queue:s.queue.slice(), mastered:s.mastered.slice(), misses:{...s.misses}, swipes:s.swipes, ref, stats:{...(g.item.stats || newStats())}});
+    if (s.hist.length > 25) s.hist.shift();
+    s.queue.shift(); s.swipes++; bump(g.item, ok);
+    if (ok) s.mastered.push(ref); else { s.misses[ref] = (s.misses[ref]||0) + 1; Core.reinsert(s.queue, ref, 3); }
+    if (!s.queue.length) s.done = true;
+    F = {flipped:false, seen:false, busy:false}; save(); render();
+  }, el ? 200 : 0);
+}
+function flashUndo(){
+  const s = db.sessions[skey('flash', view.sc)]; if (!s || !s.hist.length || F.busy) return;
+  const h = s.hist.pop(); s.queue = h.queue; s.mastered = h.mastered; s.misses = h.misses; s.swipes = h.swipes; s.done = false;
+  const g = getRef(h.ref); if (g) g.item.stats = h.stats;
+  F = {flipped:false, seen:false, busy:false}; save(); render(); toast('Last swipe undone');
+}
+function bindCard(){
+  const el = $('#fc'); if (!el) return;
+  let sx = 0, sy = 0, dx = 0, down = false, drag = false;
+  const L = el.querySelector('.stamp.l'), R = el.querySelector('.stamp.r');
+  const reset = () => { el.style.transition = 'transform .25s'; el.style.transform = ''; L.style.opacity = R.style.opacity = 0; };
+  el.addEventListener('pointerdown', e => { if (F.busy) return; down = true; drag = false; sx = e.clientX; sy = e.clientY; dx = 0; el.style.transition = ''; try { el.setPointerCapture(e.pointerId); } catch(x){} });
+  el.addEventListener('pointermove', e => {
+    if (!down) return; dx = e.clientX - sx;
+    if (!drag && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(e.clientY - sy)) drag = true;
+    if (drag) { el.style.transform = `translateX(${dx}px) rotate(${dx/22}deg)`; const o = Math.min(1, Math.abs(dx)/90); L.style.opacity = dx < 0 ? o : 0; R.style.opacity = dx > 0 ? o : 0; }
+  });
+  el.addEventListener('pointerup', e => {
+    if (!down) return; down = false;
+    if (!drag) { if (Math.abs(e.clientX - sx) < 10 && Math.abs(e.clientY - sy) < 10) flipCard(); return; }
+    if (dx > 90) { if (!F.seen) reset(); flashAnswer(true); } else if (dx < -90) flashAnswer(false); else reset();
+  });
+  el.addEventListener('pointercancel', () => { down = false; reset(); });
+}
+
+/* ============ quiz ============ */
+let G = null;   // grind: state of the question on screen
+function startQuiz(sc, only){
+  const P = db.prefs.quiz; let refs = only || scopeRefs('quiz', sc);
+  if (!only && P.weak) refs = refs.filter(r => isWeak(getRef(r).item));
+  if (!refs.length) return toast(P.weak ? 'No weak questions here. Well done!' : 'No questions to answer.');
+  const lim = parseInt(P.limit, 10);
+  if (!only && lim > 0 && lim < refs.length) {
+    if (P.order === 'shuffle') refs = Core.shuffle(refs).slice(0, lim);
+    else { const pick = new Set(Core.shuffle(refs).slice(0, lim)); refs = refs.filter(r => pick.has(r)); }
+  } else if (P.order === 'shuffle') refs = Core.shuffle(refs);
+  const key = skey('quiz', sc), base = {kind:'quiz', key, sc, mode:P.mode, opts:{typos:P.typos}, at:Date.now()};
+  if (P.mode === 'grind') db.sessions[key] = {...base, queue:refs.slice(), doneRefs:[], total:refs.length, all:refs.slice(), first:{}, firstGiven:{}, missCount:{}, done:false};
+  else { const orders = {}; refs.forEach(r => { const it = getRef(r).item; if (it.kind === 'mcq') orders[r] = Core.shuffle([it.a, ...it.x]); });
+    db.sessions[key] = {...base, refs:refs.slice(), idx:0, answers:{}, orders, submitted:false, marks:{}}; }
+  G = null; nav({name:'quiz', sc});
+}
+const KIND = {mcq:'Multiple choice', tf:'True or false', blank:'Fill in the blank', short:'Short answer'};
+const typed = it => it.kind === 'blank' || it.kind === 'short';
+function judge(it, given, s){
+  if (given == null || given === '') return false;
+  return typed(it) ? Core.markTyped(given, it.a, {typos:s.opts.typos}) : given === it.a;
+}
+function vQuiz(v){
+  const key = skey('quiz', v.sc), s = db.sessions[key], sb = scopeSubject(v.sc); if (!s || !sb) return null;
+  const math = sb.ws === 'math';
+  const head = (extra) => `<div class="bar"><button class="back" data-act="open-study" data-kind="quiz" data-t="${v.sc.t}" data-id="${v.sc.id}">←</button><div style="flex:1;min-width:0"><h2>${esc(scopeName(v.sc))}</h2><div class="sub">${s.mode==='grind'?'Grind mode':'Exam mode'}</div></div>${extra||''}</div>`;
+  if (s.mode === 'grind') {
+    s.queue = s.queue.filter(getRef); s.all = s.all.filter(getRef); s.doneRefs = s.doneRefs.filter(getRef); s.total = s.all.length;
+    if (!s.total) { delete db.sessions[key]; save(); return null; }
+    if (!s.queue.length) s.done = true;
+    if (s.done) return head() + vResults(s, math);
+    return vGrind(s, math, head);
+  }
+  s.refs = s.refs.filter(getRef); if (!s.refs.length) { delete db.sessions[key]; save(); return null; }
+  if (s.submitted) return head() + vResults(s, math);
+  return vExam(s, math, head);
+}
+function optionsHTML(it, order, picked, reveal){
+  if (it.kind === 'mcq') return `<div class="opts">${order.map((o, i) => {
+    let c = ''; if (reveal) { if (o === it.a) c = 'right'; else if (o === picked) c = 'wrong'; } else if (o === picked) c = 'sel';
+    return `<button class="opt ${c}" data-act="pick" data-i="${i}" ${reveal?'disabled':''}><i>${'ABCDEFGH'[i]}</i><span>${rich(o, isMathView())}</span></button>`; }).join('')}</div>`;
+  return `<div class="opts tf">${['True','False'].map(o => {
+    let c = ''; if (reveal) { if (o === it.a) c = 'right'; else if (o === picked) c = 'wrong'; } else if (o === picked) c = 'sel';
+    return `<button class="opt ${c}" data-act="pick" data-v="${o}" ${reveal?'disabled':''}>${o}</button>`; }).join('')}</div>`;
+}
+const isMathView = () => { const s = viewSubject(); return !!s && s.ws === 'math'; };
+function vGrind(s, math, head){
+  const ref = s.queue[0], it = getRef(ref).item;
+  if (!G || G.ref !== ref) G = {ref, phase:'ask', order: it.kind === 'mcq' ? Core.shuffle([it.a, ...it.x]) : null, given:null, correct:false};
+  const fb = G.phase === 'fb';
+  let body = '';
+  if (typed(it)) body = fb ? '' : `<div class="ans-in"><input class="in" id="ans" placeholder="Type your answer" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"><button class="btn pri" data-act="check">Check</button></div>`;
+  else body = optionsHTML(it, G.order, G.given, fb);
+  let fbHTML = '';
+  if (fb) {
+    const alts = Core.answerAlts(it.a);
+    fbHTML = `<div class="fb ${G.correct?'ok':'no'}"><h4>${G.correct ? 'Correct! 🎉' : 'Not quite 🌧️'}</h4>
+      ${typed(it) ? `<p>Your answer: ${esc(G.given)}</p>` : ''}
+      ${!G.correct || typed(it) ? `<p>Answer: ${rich(Core.showAnswer(it.a), math)}${typed(it) && alts.length > 1 ? ` <span style="opacity:.75">(also accepted: ${alts.slice(1).map(a => esc(a.text)).join(', ')})</span>` : ''}</p>` : ''}
+      ${it.why ? `<div class="why">💡 ${rich(it.why, math)}</div>` : ''}
+      ${typed(it) ? `<button class="lnk" data-act="override">${G.correct ? 'Mark as wrong' : 'My answer was right'}</button>` : ''}</div>
+      <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn big pri" data-act="g-next">${s.queue.length === 1 && G.correct ? 'See my score' : 'Next'}</button></div>`;
+  }
+  after = () => { const a = $('#ans'); if (a) a.focus(); };
+  const rep = s.first[ref] === false ? ' · again' : '';
+  return head(`<button class="icon" data-act="edit-item" data-ref="${esc(ref)}">✏️</button>`) + `
+  <div class="prog"><div class="track"><div class="fill" style="width:${s.doneRefs.length/s.total*100}%"></div></div><span>${s.doneRefs.length} / ${s.total} done</span></div>
+  <div class="q-card"><span class="q-kind">${KIND[it.kind]}${rep}</span><div class="q-text">${rich(it.q, math)}</div>${body}</div>${fbHTML}
+  <div class="keys">${typed(it) ? 'Enter = check, then Enter = next' : (it.kind==='mcq' ? '1 to 4 = choose' : 'T or F = choose') + ' · Enter = next'}</div>`;
+}
+function grindCheck(given){
+  const s = db.sessions[skey('quiz', view.sc)]; if (!s || !G || G.phase !== 'ask') return;
+  const it = getRef(G.ref).item;
+  if (typed(it) && !String(given).trim()) return toast('Type an answer first');
+  G.given = given; G.correct = judge(it, given, s); G.phase = 'fb'; render();
+}
+function grindNext(){
+  const s = db.sessions[skey('quiz', view.sc)]; if (!s || !G || G.phase !== 'fb') return;
+  const ref = G.ref, it = getRef(ref).item;
+  if (!(ref in s.first)) { s.first[ref] = G.correct; s.firstGiven[ref] = G.given; }
+  bump(it, G.correct); s.queue.shift();
+  if (G.correct) s.doneRefs.push(ref); else { s.missCount[ref] = (s.missCount[ref]||0) + 1; Core.reinsert(s.queue, ref, 3); }
+  if (!s.queue.length) s.done = true;
+  G = null; save(); render(); window.scrollTo(0, 0);
+}
+function vExam(s, math, head){
+  s.idx = Math.max(0, Math.min(s.idx, s.refs.length-1));
+  const ref = s.refs[s.idx], it = getRef(ref).item, given = s.answers[ref];
+  if (it.kind === 'mcq' && !s.orders[ref]) s.orders[ref] = Core.shuffle([it.a, ...it.x]);
+  const nAns = s.refs.filter(r => s.answers[r] != null && s.answers[r] !== '').length;
+  const body = typed(it)
+    ? `<div class="ans-in"><input class="in" id="ans" placeholder="Type your answer" value="${esc(given||'')}" data-input="exam-ans" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next"></div>`
+    : optionsHTML(it, s.orders[ref], given, false);
+  after = () => { const c = document.querySelector('.q-nav .cur'); if (c && c.scrollIntoView) c.scrollIntoView({inline:'center', block:'nearest'}); };
+  return head() + `
+  <div class="prog"><div class="track"><div class="fill" style="width:${nAns/s.refs.length*100}%"></div></div><span id="ex-count">${nAns} / ${s.refs.length} answered</span></div>
+  <div class="q-nav">${s.refs.map((r, i) => `<button class="${s.answers[r] != null && s.answers[r] !== '' ? 'done' : ''} ${i===s.idx?'cur':''}" data-act="e-go" data-i="${i}">${i+1}</button>`).join('')}</div>
+  <div class="q-card"><span class="q-kind">Question ${s.idx+1} · ${KIND[it.kind]}</span><div class="q-text">${rich(it.q, math)}</div>${body}</div>
+  <div class="q-foot"><button class="btn" data-act="e-go" data-i="${s.idx-1}" ${s.idx===0?'disabled':''}>← Back</button>
+    <div class="row">${s.idx < s.refs.length-1 ? `<button class="btn soft" data-act="e-go" data-i="${s.idx+1}">${given != null && given !== '' ? 'Next →' : 'Skip →'}</button>` : ''}
+    <button class="btn pri" data-act="e-submit">Submit quiz</button></div></div>
+  <div class="keys">← → = move between questions · you can change any answer before you submit</div>`;
+}
+async function examSubmit(){
+  const s = db.sessions[skey('quiz', view.sc)]; if (!s || s.submitted) return;
+  const un = s.refs.filter(r => s.answers[r] == null || String(s.answers[r]).trim() === '').length;
+  if (!await confirmBox('Submit the quiz?', un ? `You left ${un} question${un===1?'':'s'} without an answer. You cannot change answers after you submit.` : 'You cannot change answers after you submit.', 'Submit')) return;
+  s.refs.forEach(r => { const it = getRef(r).item; s.marks[r] = judge(it, s.answers[r], s); bump(it, s.marks[r]); });
+  s.submitted = true; save(); render(); window.scrollTo(0, 0);
+}
+function vResults(s, math){
+  const grind = s.mode === 'grind', refs = grind ? s.all : s.refs;
+  const ok = r => grind ? s.first[r] === true : s.marks[r] === true;
+  const good = refs.filter(ok).length, pct = Math.round(good / refs.length * 100), wrong = refs.filter(r => !ok(r));
+  const msg = pct === 100 ? 'Full marks! 🌟' : pct >= 80 ? 'Great work! 🎉' : pct >= 50 ? 'Good effort 🌷' : 'Keep going, you can do this 💪';
+  const card = r => { const it = getRef(r).item, given = grind ? s.firstGiven[r] : s.answers[r], isOk = ok(r);
+    return `<div class="rev ${isOk?'ok':''}"><div class="rq">${rich(it.q, math)}</div>
+      <p class="you">${grind ? 'Your first answer' : 'Your answer'}: ${given == null || given === '' ? '<i>no answer</i>' : typed(it) ? esc(given) : rich(given, math)}</p>
+      ${isOk && !typed(it) ? '' : `<p class="cor">Correct answer: ${rich(Core.showAnswer(it.a), math)}</p>`}
+      ${it.why ? `<p class="why">💡 ${rich(it.why, math)}</p>` : ''}
+      ${grind && s.missCount[r] > 1 ? `<p class="why">Missed ${s.missCount[r]} times before you got it right</p>` : ''}
+      ${!grind && typed(it) && given ? `<button class="lnk" data-act="r-override" data-ref="${esc(r)}">${isOk ? 'Mark as wrong' : 'My answer was right'}</button>` : ''}</div>`; };
+  return `<div class="score"><div class="ring" style="--p:${pct}"><div><span>${good}/${refs.length}<small>${pct}%</small></span></div></div><h2>${msg}</h2>
+    <p class="hint">${grind ? 'Score counts your first attempt at each question' : 'Exam mode score'}</p></div>
+  <div class="row" style="justify-content:center;margin-bottom:8px">
+    ${wrong.length ? `<button class="btn pri" data-act="quiz-wrong">Redo wrong questions (${wrong.length})</button>` : ''}
+    <button class="btn" data-act="quiz-again">Try again</button><button class="btn" data-act="finish" data-kind="quiz">Done</button></div>
+  ${wrong.length ? `<div class="sec"><h2>Questions you got wrong (${wrong.length})</h2></div>` + wrong.map(card).join('') : ''}
+  ${refs.length > wrong.length ? `<details class="panel" style="margin-top:14px"><summary>Questions you got right (${good})</summary><div style="margin-top:10px">${refs.filter(ok).map(card).join('')}</div></details>` : ''}`;
+}
+
+/* ============ modals ============ */
+function subjectModal(s){
+  let col = s ? s.color : PALETTE[db.subjects.length % PALETTE.length].k;
+  const sw = () => PALETTE.map(p => `<button class="${p.k===col?'on':''}" style="--bg:${p.bg};--mid:${p.mid}" title="${p.n}" data-m="col" data-v="${p.k}"></button>`).join('');
+  openModal(`<h3>${s ? 'Edit subject' : 'New subject'}</h3>
+    <label class="f">Name</label><input class="in" id="m-name" maxlength="40" placeholder="for example Science" value="${esc(s ? s.name : '')}" autofocus>
+    <label class="f">Colour</label><div class="sw" id="m-sw">${sw()}</div>
+    <div class="row end">${s ? '<button class="btn danger" data-m="del">Delete</button>' : ''}<button class="btn" data-m="cancel">Cancel</button><button class="btn pri" data-m="ok">${s ? 'Save' : 'Create'}</button></div>`, {
+    col(el){ col = el.dataset.v; $('#m-sw').innerHTML = sw(); },
+    cancel: closeModal,
+    ok(){ const n = $('#m-name').value.trim(); if (!n) return toast('Give the subject a name');
+      if (s) { s.name = n; s.color = col; } else db.subjects.push({id:uid(), ws:db.ui.ws, name:n, color:col, at:Date.now()});
+      save(); closeModal(); render(); },
+    async del(){ if (!await confirmBox('Delete "' + s.name + '"?', 'This deletes every topic, flashcard deck and quiz inside it.', 'Delete', true)) return;
+      const tids = topicsOf(s.id).map(t => t.id); dropDecks(db.decks.filter(d => tids.includes(d.topicId)).map(d => d.id));
+      db.topics = db.topics.filter(t => t.subjectId !== s.id); db.subjects = db.subjects.filter(x => x.id !== s.id); dropSessions(); save(); nav({name:'home'}); }
+  });
+}
+function topicModal(sid, t){
+  openModal(`<h3>${t ? 'Edit topic' : 'New topic'}</h3><label class="f">Name</label><input class="in" id="m-name" maxlength="50" placeholder="for example Photosynthesis" value="${esc(t ? t.name : '')}" autofocus>
+    <div class="row end">${t ? '<button class="btn danger" data-m="del">Delete</button>' : ''}<button class="btn" data-m="cancel">Cancel</button><button class="btn pri" data-m="ok">${t ? 'Save' : 'Create'}</button></div>`, {
+    cancel: closeModal,
+    ok(){ const n = $('#m-name').value.trim(); if (!n) return toast('Give the topic a name');
+      if (t) t.name = n; else db.topics.push({id:uid(), subjectId:sid, name:n}); save(); closeModal(); render(); },
+    async del(){ if (!await confirmBox('Delete "' + t.name + '"?', 'This deletes every flashcard deck and quiz inside it.', 'Delete', true)) return;
+      dropDecks(decksOf(t.id).map(d => d.id)); db.topics = db.topics.filter(x => x.id !== t.id); dropSessions(); save(); closeModal(); render(); }
+  });
+}
+function dropDecks(ids){ db.decks = db.decks.filter(d => !ids.includes(d.id)); }
+function dropSessions(){ for (const k in db.sessions) if (!scopeSubject(db.sessions[k].sc)) delete db.sessions[k]; }
+function deckModal(tid, type){
+  const fl = type === 'flash';
+  openModal(`<h3>${fl ? 'New flashcards 🃏' : 'New quiz ❓'}</h3>
+    <label class="f">Name</label><input class="in" id="m-name" maxlength="60" placeholder="${fl ? 'for example Key terms' : 'for example Chapter 3 quiz'}">
+    <label class="f">Paste the ${fl ? 'cards' : 'questions'} here</label>
+    <textarea class="in" id="m-text" data-input="draft" data-type="${type}" spellcheck="false" placeholder="${fl ? 'Q: What is photosynthesis?&#10;A: How plants make food&#10;- needs sunlight, water, carbon dioxide&#10;&#10;Q: next question&#10;A: next answer' : 'Q: Which gas do plants absorb?&#10;A: Carbon dioxide&#10;X: Oxygen&#10;X: Nitrogen&#10;X: Hydrogen&#10;&#10;Q: Plants absorb ____ through their roots.&#10;A: *water*'}"></textarea>
+    <div class="check" id="m-check"></div>
+    <p class="hint">Tip: copy the ready-made AI prompt from the home page to turn your notes into this format.</p>
+    <div class="row end"><button class="btn" data-m="cancel">Cancel</button><button class="btn pri" data-m="ok">Create</button></div>`, {
+    cancel: closeModal,
+    ok(){ const n = $('#m-name').value.trim(), r = parseDraft(type, $('#m-text').value);
+      if (!n) return toast('Give it a name'); if (!r.items.length) return toast('No ' + (fl ? 'cards' : 'questions') + ' found. Check the format.');
+      db.decks.push({id:uid(), topicId:tid, type, name:n, at:Date.now(), items:r.items.map(i => ({id:uid(), ...i, stats:newStats()}))});
+      save(); closeModal(); render(); toast(`${r.items.length} ${fl ? 'card' : 'question'}${r.items.length===1?'':'s'} added` + (r.problems.length ? `, ${r.problems.length} skipped` : '')); }
+  });
+}
+function itemModal(ref){
+  const g = getRef(ref); if (!g) return;
+  openModal(`<h3>Edit this ${g.deck.type === 'flash' ? 'card' : 'question'}</h3><textarea class="in" id="m-text" style="min-height:180px" spellcheck="false">${esc(Core.serialize(g.item, g.deck.type))}</textarea>
+    <div class="row end"><button class="btn" data-m="cancel">Cancel</button><button class="btn pri" data-m="ok">Save</button></div>`, {
+    cancel: closeModal,
+    ok(){ const r = parseDraft(g.deck.type, $('#m-text').value);
+      if (r.items.length !== 1) return toast(r.items.length ? 'Keep exactly one "Q:" here' : 'It needs a "Q:" line and an "A:" line');
+      const keep = {id:g.item.id, stats:g.item.stats}; for (const k in g.item) delete g.item[k]; Object.assign(g.item, r.items[0], keep);
+      G = null; save(); closeModal(); render(); toast('Saved'); }
+  });
+}
+
+/* ============ backup ============ */
+function exportBackup(){
+  db.meta.lastBackup = Date.now(); save();
+  const blob = new Blob([JSON.stringify({app:'revision-tool', ...db}, null, 1)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'revision-tool-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast('Backup file saved'); render();
+}
+function importBackup(file){
+  const fr = new FileReader();
+  fr.onload = () => {
+    let d; try { d = JSON.parse(fr.result); } catch(e){ return toast('This file is not a Revision Tool backup'); }
+    if (!d || !['revision-tool','mochi-cards'].includes(d.app) || !Array.isArray(d.decks)) return toast('This file is not a Revision Tool backup');
+    d = fix(d);
+    openModal(`<h3>Import backup</h3><p class="hint">The file has ${d.subjects.length} subject${d.subjects.length===1?'':'s'} and ${d.decks.length} deck${d.decks.length===1?'':'s'}.</p>
+      <p class="hint"><b>Merge</b> adds what this device does not have yet and keeps everything already here.<br><b>Replace</b> deletes everything on this device and loads the file.</p>
+      <div class="row end"><button class="btn" data-m="cancel">Cancel</button><button class="btn danger" data-m="replace">Replace</button><button class="btn pri" data-m="merge">Merge</button></div>`, {
+      cancel: closeModal,
+      merge(){ for (const k of ['subjects','topics','decks']) d[k].forEach(x => { if (!db[k].some(y => y.id === x.id)) db[k].push(x); });
+        for (const k in d.sessions) if (!db.sessions[k]) db.sessions[k] = d.sessions[k];
+        dropSessions(); save(); closeModal(); nav({name:'home'}, true); toast('Backup merged'); },
+      replace(){ const ui = db.ui; delete d.app; db = d; db.ui = {...ui, view:{name:'home'}}; dropSessions(); save(); closeModal(); nav({name:'home'}, true); toast('Backup loaded'); }
+    });
+  };
+  fr.readAsText(file);
+}
+
+/* ============ actions ============ */
+const A = {
+  home(){ nav({name:'home'}); },
+  ws(el){ db.ui.ws = el.dataset.v; save(); render(); },
+  theme(){ db.ui.theme = isDark() ? 'light' : 'dark'; save(); render(); },
+  'open-subject'(el){ nav({name:'subject', id:el.dataset.id}); },
+  'new-subject'(){ subjectModal(); },
+  'edit-subject'(el){ subjectModal(subj(el.dataset.id)); },
+  'new-topic'(el){ topicModal(el.dataset.id); },
+  'edit-topic'(el){ const t = topic(el.dataset.id); topicModal(t.subjectId, t); },
+  'new-deck'(el){ deckModal(el.dataset.id, el.dataset.type); },
+  'open-study'(el){ nav({name:'study', kind:el.dataset.kind, sc:{t:el.dataset.t, id:el.dataset.id}}); },
+  'open-edit'(el){ nav({name:'edit', id:el.dataset.id}); },
+  pref(el){ const p = db.prefs[el.dataset.kind], k = el.dataset.k; p[k] = el.dataset.v === 'toggle' ? !p[k] : el.dataset.v; save(); render(); },
+  start(){ (view.kind === 'flash' ? startFlash : startQuiz)(view.sc); },
+  resume(el){ const s = db.sessions[el.dataset.key]; if (!s) return render(); F = {flipped:false, seen:false, busy:false}; G = null; nav({name:s.kind, sc:s.sc}); },
+  'copy-prompt'(el){ copyText(PROMPTS[db.ui.ws][el.dataset.k]); },
+  export(){ exportBackup(); },
+  import(){ $('#imp').click(); },
+  'save-edit'(el){ const d = deck(el.dataset.id), n = $('#ed-name').value.trim(), r = parseDraft(d.type, $('#ed-text').value);
+    if (!n) return toast('Give it a name'); if (!r.items.length) return toast('Nothing to save. Each one needs "Q:" and "A:".');
+    const old = new Map(d.items.map(i => [i.q, i]));
+    d.items = r.items.map(i => { const o = old.get(i.q); old.delete(i.q); return {id:o ? o.id : uid(), ...i, stats:o ? o.stats : newStats()}; });
+    d.name = n; save(); toast('Saved' + (r.problems.length ? `, ${r.problems.length} skipped` : '')); nav({name:'study', kind:d.type, sc:{t:'deck', id:d.id}}); },
+  'copy-deck'(){ copyText($('#ed-text').value); },
+  async 'del-deck'(el){ const d = deck(el.dataset.id), t = topic(d.topicId);
+    if (!await confirmBox('Delete "' + d.name + '"?', 'You cannot undo this.', 'Delete', true)) return;
+    dropDecks([d.id]); dropSessions(); save(); nav({name:'subject', id:t.subjectId}); },
+  'edit-item'(el){ itemModal(el.dataset.ref); },
+  'f-flip'(){ flipCard(); }, 'f-left'(){ flashAnswer(false); }, 'f-right'(){ flashAnswer(true); }, 'f-undo'(){ flashUndo(); },
+  'flash-again'(){ startFlash(view.sc, scopeRefs('flash', view.sc)); },
+  'flash-missed'(){ const s = db.sessions[skey('flash', view.sc)]; startFlash(view.sc, Object.keys(s.misses).filter(getRef)); },
+  finish(el){ delete db.sessions[skey(el.dataset.kind, view.sc)]; save(); nav({name:'study', kind:el.dataset.kind, sc:view.sc}); },
+  pick(el){ const s = db.sessions[skey('quiz', view.sc)]; if (!s) return;
+    if (s.mode === 'grind') { if (!G || G.phase !== 'ask') return; grindCheck(el.dataset.v || G.order[+el.dataset.i]); }
+    else { const ref = s.refs[s.idx], v = el.dataset.v || s.orders[ref][+el.dataset.i]; s.answers[ref] = s.answers[ref] === v ? null : v; if (s.answers[ref] === null) delete s.answers[ref]; save(); render(); } },
+  check(){ grindCheck($('#ans').value); },
+  override(){ if (G && G.phase === 'fb') { G.correct = !G.correct; render(); } },
+  'g-next'(){ grindNext(); },
+  'e-go'(el){ const s = db.sessions[skey('quiz', view.sc)], i = +el.dataset.i; if (!s || i < 0 || i >= s.refs.length) return; s.idx = i; save(); render(); },
+  'e-submit'(){ examSubmit(); },
+  'r-override'(el){ const s = db.sessions[skey('quiz', view.sc)], r = el.dataset.ref, g = getRef(r); if (!s || !g) return;
+    s.marks[r] = !s.marks[r]; const st = g.item.stats || (g.item.stats = newStats());
+    if (s.marks[r]) { st.wrong = Math.max(0, st.wrong-1); st.streak++; } else { st.wrong++; st.streak = 0; }
+    const y = window.scrollY; save(); render(); window.scrollTo(0, y); },
+  'quiz-again'(){ const s = db.sessions[skey('quiz', view.sc)]; startQuiz(view.sc, Core.shuffle(s.mode === 'grind' ? s.all : s.refs)); },
+  'quiz-wrong'(){ const s = db.sessions[skey('quiz', view.sc)], g = s.mode === 'grind';
+    startQuiz(view.sc, (g ? s.all : s.refs).filter(r => g ? s.first[r] !== true : s.marks[r] !== true)); }
+};
+document.addEventListener('click', e => {
+  const m = e.target.closest('[data-m]'); if (m && modalActs[m.dataset.m]) return modalActs[m.dataset.m](m);
+  if (e.target.id === 'modal') return (modalActs.cancel || modalActs.no || closeModal)();
+  const el = e.target.closest('[data-act]'); if (el && A[el.dataset.act] && !el.disabled) A[el.dataset.act](el, e);
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.input === 'draft') checkDraft(t.dataset.type, t.value, $('#m-check') || $('#ed-check'));
+  if (t.dataset.input === 'exam-ans') { const s = db.sessions[skey('quiz', view.sc)]; if (!s) return; const ref = s.refs[s.idx];
+    if (t.value.trim()) s.answers[ref] = t.value; else delete s.answers[ref]; save();
+    const n = s.refs.filter(r => s.answers[r] != null && s.answers[r] !== '').length; $('#ex-count').textContent = `${n} / ${s.refs.length} answered`;
+    const chip = document.querySelector('.q-nav .cur'); if (chip) chip.classList.toggle('done', !!t.value.trim()); }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.change === 'limit') { db.prefs.quiz.limit = t.value; save(); }
+  if (t.id === 'imp' && t.files[0]) { importBackup(t.files[0]); t.value = ''; }
+});
+document.addEventListener('keydown', e => {
+  const inField = /INPUT|TEXTAREA/.test(e.target.tagName), modal = $('#modal').classList.contains('on');
+  if (modal) { if (e.key === 'Escape') (modalActs.cancel || modalActs.no || closeModal)(); if (e.key === 'Enter' && e.target.tagName === 'INPUT' && modalActs.ok) modalActs.ok(); return; }
+  if (view.name === 'flash' && !inField) {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+    else if (e.key === 'ArrowLeft') flashAnswer(false); else if (e.key === 'ArrowRight') flashAnswer(true);
+    else if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') flashUndo();
+  }
+  if (view.name === 'quiz') {
+    const s = db.sessions[skey('quiz', view.sc)]; if (!s || s.done || s.submitted) return;
+    if (s.mode === 'grind' && G) {
+      if (e.key === 'Enter') { e.preventDefault(); if (G.phase === 'fb') grindNext(); else if (inField) grindCheck(e.target.value); return; }
+      if (inField || G.phase !== 'ask') return;
+      const it = getRef(G.ref).item;
+      if (it.kind === 'mcq' && /^[1-8]$/.test(e.key) && G.order[+e.key-1]) grindCheck(G.order[+e.key-1]);
+      if (it.kind === 'tf' && /^[tf]$/i.test(e.key)) grindCheck(/t/i.test(e.key) ? 'True' : 'False');
+    } else if (s.mode === 'exam') {
+      if (e.key === 'Enter' && inField) { e.preventDefault(); A['e-go']({dataset:{i:s.idx+1}}); return; }
+      if (inField) return;
+      if (e.key === 'ArrowLeft') A['e-go']({dataset:{i:s.idx-1}}); if (e.key === 'ArrowRight') A['e-go']({dataset:{i:s.idx+1}});
+    }
+  }
+});
+
+try { history.replaceState(view, ''); } catch(e){}
+render();
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" onload="if(document.body.classList.contains('math'))render()"></script>
+</body>
+</html>
